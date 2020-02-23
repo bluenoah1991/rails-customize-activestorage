@@ -1,14 +1,16 @@
 import { getMetaValue } from "./helpers"
 
 export class BlobRecord {
-  constructor(file, checksum, url) {
+  constructor(file, checksum, url, region, bucket) {
     this.file = file
 
     this.attributes = {
       filename: file.name,
       content_type: file.type,
       byte_size: file.size,
-      checksum: checksum
+      checksum: checksum,
+      region: region,
+      bucket: bucket
     }
 
     this.xhr = new XMLHttpRequest

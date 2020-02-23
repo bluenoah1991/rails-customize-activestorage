@@ -4,8 +4,10 @@ import { dispatchEvent } from "./helpers"
 export class DirectUploadController {
   constructor(input, file) {
     this.input = input
+    this.region = input.getAttribute("data-region")
+    this.bucket = input.getAttribute("data-bucket")
     this.file = file
-    this.directUpload = new DirectUpload(this.file, this.url, this)
+    this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this)
     this.dispatch("initialize")
   }
 

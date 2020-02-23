@@ -544,7 +544,7 @@
     }
   }
   var BlobRecord = function() {
-    function BlobRecord(file, checksum, url) {
+    function BlobRecord(file, checksum, url, region, bucket) {
       var _this = this;
       classCallCheck(this, BlobRecord);
       this.file = file;
@@ -552,7 +552,9 @@
         filename: file.name,
         content_type: file.type,
         byte_size: file.size,
-        checksum: checksum
+        checksum: checksum,
+        region: region,
+        bucket: bucket
       };
       this.xhr = new XMLHttpRequest();
       this.xhr.open("POST", url, true);
@@ -668,11 +670,13 @@
   }();
   var id = 0;
   var DirectUpload = function() {
-    function DirectUpload(file, url, delegate) {
+    function DirectUpload(file, url, region, bucket, delegate) {
       classCallCheck(this, DirectUpload);
       this.id = ++id;
       this.file = file;
       this.url = url;
+      this.region = region;
+      this.bucket = bucket;
       this.delegate = delegate;
     }
     createClass(DirectUpload, [ {
@@ -684,7 +688,7 @@
             callback(error);
             return;
           }
-          var blob = new BlobRecord(_this.file, checksum, _this.url);
+          var blob = new BlobRecord(_this.file, checksum, _this.url, _this.region, _this.bucket);
           notify(_this.delegate, "directUploadWillCreateBlobWithXHR", blob.xhr);
           blob.create(function(error) {
             if (error) {
@@ -718,8 +722,10 @@
     function DirectUploadController(input, file) {
       classCallCheck(this, DirectUploadController);
       this.input = input;
+      this.region = input.getAttribute("data-region");
+      this.bucket = input.getAttribute("data-bucket");
       this.file = file;
-      this.directUpload = new DirectUpload(this.file, this.url, this);
+      this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this);
       this.dispatch("initialize");
     }
     createClass(DirectUploadController, [ {
