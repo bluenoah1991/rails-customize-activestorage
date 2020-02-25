@@ -2,31 +2,25 @@ import { DirectUpload } from "./direct_upload"
 import { dispatchEvent } from "./helpers"
 
 export class DirectUploadController {
-  constructor(input, file) {
+  constructor(input, file, hiddenInput) {
     this.input = input
     this.region = input.getAttribute("data-region")
     this.bucket = input.getAttribute("data-bucket")
     this.file = file
+    this.hiddenInput = hiddenInput
     this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this)
     this.dispatch("initialize")
   }
 
   start(callback) {
-    const hiddenInput = document.createElement("input")
-    hiddenInput.type = "hidden"
-    hiddenInput.name = this.input.name
-    this.input.insertAdjacentElement("beforebegin", hiddenInput)
-
     this.dispatch("start")
-
     this.directUpload.create((error, attributes) => {
       if (error) {
-        hiddenInput.parentNode.removeChild(hiddenInput)
         this.dispatchError(error)
       } else {
-        hiddenInput.value = attributes.signed_id
+        this.hiddenInput.name = this.input.name
+        this.hiddenInput.value = attributes.signed_id
       }
-
       this.dispatch("end")
       callback(error)
     })

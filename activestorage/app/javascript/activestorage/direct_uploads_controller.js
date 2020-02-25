@@ -7,6 +7,9 @@ export class DirectUploadsController {
   constructor(form) {
     this.form = form
     this.inputs = findElements(form, inputSelector).filter(input => input.files.length)
+    this.hiddenInput = document.createElement("input")
+    this.hiddenInput.type = "hidden"
+    this.form.appendChild(this.hiddenInput)
   }
 
   start(callback) {
@@ -17,14 +20,17 @@ export class DirectUploadsController {
       if (controller) {
         controller.start(error => {
           if (error) {
-            callback(error)
+            this.form.removeChild(this.hiddenInput)
+            callback(error, true)
             this.dispatch("end")
           } else {
+            callback(null, false)
             startNextController()
           }
         })
       } else {
-        callback()
+        this.form.removeChild(this.hiddenInput)
+        callback(null, true)
         this.dispatch("end")
       }
     }
@@ -37,7 +43,7 @@ export class DirectUploadsController {
     const controllers = []
     this.inputs.forEach(input => {
       toArray(input.files).forEach(file => {
-        const controller = new DirectUploadController(input, file)
+        const controller = new DirectUploadController(input, file, this.hiddenInput)
         controllers.push(controller)
       })
     })

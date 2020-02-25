@@ -719,12 +719,13 @@
     }
   }
   var DirectUploadController = function() {
-    function DirectUploadController(input, file) {
+    function DirectUploadController(input, file, hiddenInput) {
       classCallCheck(this, DirectUploadController);
       this.input = input;
       this.region = input.getAttribute("data-region");
       this.bucket = input.getAttribute("data-bucket");
       this.file = file;
+      this.hiddenInput = hiddenInput;
       this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this);
       this.dispatch("initialize");
     }
@@ -732,17 +733,13 @@
       key: "start",
       value: function start(callback) {
         var _this = this;
-        var hiddenInput = document.createElement("input");
-        hiddenInput.type = "hidden";
-        hiddenInput.name = this.input.name;
-        this.input.insertAdjacentElement("beforebegin", hiddenInput);
         this.dispatch("start");
         this.directUpload.create(function(error, attributes) {
           if (error) {
-            hiddenInput.parentNode.removeChild(hiddenInput);
             _this.dispatchError(error);
           } else {
-            hiddenInput.value = attributes.signed_id;
+            _this.hiddenInput.name = _this.input.name;
+            _this.hiddenInput.value = attributes.signed_id;
           }
           _this.dispatch("end");
           callback(error);
@@ -812,6 +809,9 @@
       this.inputs = findElements(form, inputSelector).filter(function(input) {
         return input.files.length;
       });
+      this.hiddenInput = document.createElement("input");
+      this.hiddenInput.type = "hidden";
+      this.form.appendChild(this.hiddenInput);
     }
     createClass(DirectUploadsController, [ {
       key: "start",
@@ -823,14 +823,17 @@
           if (controller) {
             controller.start(function(error) {
               if (error) {
-                callback(error);
+                _this.form.removeChild(_this.hiddenInput);
+                callback(error, true);
                 _this.dispatch("end");
               } else {
+                callback(null, false);
                 startNextController();
               }
             });
           } else {
-            callback();
+            _this.form.removeChild(_this.hiddenInput);
+            callback(null, true);
             _this.dispatch("end");
           }
         };
@@ -840,10 +843,11 @@
     }, {
       key: "createDirectUploadControllers",
       value: function createDirectUploadControllers() {
+        var _this2 = this;
         var controllers = [];
         this.inputs.forEach(function(input) {
           toArray$1(input.files).forEach(function(file) {
-            var controller = new DirectUploadController(input, file);
+            var controller = new DirectUploadController(input, file, _this2.hiddenInput);
             controllers.push(controller);
           });
         });
@@ -861,6 +865,7 @@
     return DirectUploadsController;
   }();
   var processingAttribute = "data-direct-uploads-processing";
+  var submittingAttribute = "data-submitting";
   var submitButtonsByForm = new WeakMap();
   var started = false;
   function start() {
@@ -887,6 +892,9 @@
   }
   function handleFormSubmissionEvent(event) {
     var form = event.target;
+    if (form.hasAttribute(submittingAttribute)) {
+      return;
+    }
     if (form.hasAttribute(processingAttribute)) {
       event.preventDefault();
       return;
@@ -897,12 +905,14 @@
       event.preventDefault();
       form.setAttribute(processingAttribute, "");
       inputs.forEach(disable);
-      controller.start(function(error) {
-        form.removeAttribute(processingAttribute);
-        if (error) {
+      controller.start(function(error, closed) {
+        if (closed) {
+          form.removeAttribute(processingAttribute);
           inputs.forEach(enable);
         } else {
+          form.setAttribute(submittingAttribute, "");
           submitForm(form);
+          form.removeAttribute(submittingAttribute);
         }
       });
     }

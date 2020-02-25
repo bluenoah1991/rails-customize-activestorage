@@ -2,6 +2,7 @@ import { DirectUploadsController } from "./direct_uploads_controller"
 import { findElement } from "./helpers"
 
 const processingAttribute = "data-direct-uploads-processing"
+const submittingAttribute = "data-submitting"
 const submitButtonsByForm = new WeakMap
 let started = false
 
@@ -34,6 +35,9 @@ function didSubmitRemoteElement(event) {
 function handleFormSubmissionEvent(event) {
   const form = event.target
 
+  if (form.hasAttribute(submittingAttribute)) {
+    return
+  }
   if (form.hasAttribute(processingAttribute)) {
     event.preventDefault()
     return
@@ -46,12 +50,15 @@ function handleFormSubmissionEvent(event) {
     event.preventDefault()
     form.setAttribute(processingAttribute, "")
     inputs.forEach(disable)
-    controller.start(error => {
-      form.removeAttribute(processingAttribute)
-      if (error) {
+    controller.start((error, closed) => {
+      if (closed) {
+        form.removeAttribute(processingAttribute)
         inputs.forEach(enable)
+        // TODO submit error form
       } else {
+        form.setAttribute(submittingAttribute, "")
         submitForm(form)
+        form.removeAttribute(submittingAttribute)
       }
     })
   }
