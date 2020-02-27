@@ -548,8 +548,12 @@
       var _this = this;
       classCallCheck(this, BlobRecord);
       this.file = file;
+      var filename = file.webkitRelativePath;
+      if (filename == null || filename.length == 0) {
+        filename = file.name;
+      }
       this.attributes = {
-        filename: file.name,
+        filename: filename,
         content_type: file.type,
         byte_size: file.size,
         checksum: checksum,

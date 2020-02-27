@@ -4,8 +4,13 @@ export class BlobRecord {
   constructor(file, checksum, url, region, bucket) {
     this.file = file
 
+    let filename = file.webkitRelativePath
+    if (filename == null || filename.length == 0) {
+      filename = file.name
+    }
+
     this.attributes = {
-      filename: file.name,
+      filename: filename,
       content_type: file.type,
       byte_size: file.size,
       checksum: checksum,
