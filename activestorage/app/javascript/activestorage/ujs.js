@@ -53,18 +53,33 @@ function handleFormSubmissionEvent(event) {
     controller.start((error, closed) => {
       if (closed) {
         form.removeAttribute(processingAttribute)
+        submitForm(error, form, closed)
         inputs.forEach(enable)
-        // TODO submit error form
       } else {
         form.setAttribute(submittingAttribute, "")
-        submitForm(form)
+        submitForm(null, form, closed)
         form.removeAttribute(submittingAttribute)
       }
     })
   }
 }
 
-function submitForm(form) {
+function submitForm(error, form, closed) {
+  if (error) {
+    let hiddenErrorInput = document.createElement("input")
+    hiddenErrorInput.type = "hidden"
+    hiddenErrorInput.name = "upload_error"
+    hiddenErrorInput.value = error
+    form.appendChild(hiddenErrorInput)
+  }
+  if (closed) {
+    let hiddenClosedInput = document.createElement("input")
+    hiddenClosedInput.type = "hidden"
+    hiddenClosedInput.name = "upload_closed"
+    hiddenClosedInput.value = closed
+    form.appendChild(hiddenClosedInput)
+  }
+
   let button = submitButtonsByForm.get(form) || findElement(form, "input[type=submit], button[type=submit]")
 
   if (button) {

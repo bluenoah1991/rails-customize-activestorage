@@ -824,8 +824,8 @@
             controller.start(function(error) {
               if (error) {
                 _this.form.removeChild(_this.hiddenInput);
-                callback(error, true);
                 _this.dispatch("end");
+                callback(error, true);
               } else {
                 callback(null, false);
                 startNextController();
@@ -833,8 +833,8 @@
             });
           } else {
             _this.form.removeChild(_this.hiddenInput);
-            callback(null, true);
             _this.dispatch("end");
+            callback(null, true);
           }
         };
         this.dispatch("start");
@@ -908,16 +908,31 @@
       controller.start(function(error, closed) {
         if (closed) {
           form.removeAttribute(processingAttribute);
+          submitForm(error, form, closed);
           inputs.forEach(enable);
         } else {
           form.setAttribute(submittingAttribute, "");
-          submitForm(form);
+          submitForm(null, form, closed);
           form.removeAttribute(submittingAttribute);
         }
       });
     }
   }
-  function submitForm(form) {
+  function submitForm(error, form, closed) {
+    if (error) {
+      var hiddenErrorInput = document.createElement("input");
+      hiddenErrorInput.type = "hidden";
+      hiddenErrorInput.name = "upload_error";
+      hiddenErrorInput.value = error;
+      form.appendChild(hiddenErrorInput);
+    }
+    if (closed) {
+      var hiddenClosedInput = document.createElement("input");
+      hiddenClosedInput.type = "hidden";
+      hiddenClosedInput.name = "upload_closed";
+      hiddenClosedInput.value = closed;
+      form.appendChild(hiddenClosedInput);
+    }
     var button = submitButtonsByForm.get(form) || findElement(form, "input[type=submit], button[type=submit]");
     if (button) {
       var _button = button, disabled = _button.disabled;

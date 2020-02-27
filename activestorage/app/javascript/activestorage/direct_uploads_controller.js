@@ -21,8 +21,8 @@ export class DirectUploadsController {
         controller.start(error => {
           if (error) {
             this.form.removeChild(this.hiddenInput)
-            callback(error, true)
             this.dispatch("end")
+            callback(error, true)
           } else {
             callback(null, false)
             startNextController()
@@ -30,8 +30,8 @@ export class DirectUploadsController {
         })
       } else {
         this.form.removeChild(this.hiddenInput)
-        callback(null, true)
         this.dispatch("end")
+        callback(null, true)
       }
     }
 
