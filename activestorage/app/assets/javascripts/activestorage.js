@@ -544,7 +544,7 @@
     }
   }
   var BlobRecord = function() {
-    function BlobRecord(file, checksum, url, region, bucket) {
+    function BlobRecord(file, checksum, url, region, bucket, folder) {
       var _this = this;
       classCallCheck(this, BlobRecord);
       this.file = file;
@@ -558,7 +558,8 @@
         byte_size: file.size,
         checksum: checksum,
         region: region,
-        bucket: bucket
+        bucket: bucket,
+        folder: folder
       };
       this.xhr = new XMLHttpRequest();
       this.xhr.open("POST", url, true);
@@ -674,13 +675,14 @@
   }();
   var id = 0;
   var DirectUpload = function() {
-    function DirectUpload(file, url, region, bucket, delegate) {
+    function DirectUpload(file, url, region, bucket, folder, delegate) {
       classCallCheck(this, DirectUpload);
       this.id = ++id;
       this.file = file;
       this.url = url;
       this.region = region;
       this.bucket = bucket;
+      this.folder = folder;
       this.delegate = delegate;
     }
     createClass(DirectUpload, [ {
@@ -692,7 +694,7 @@
             callback(error);
             return;
           }
-          var blob = new BlobRecord(_this.file, checksum, _this.url, _this.region, _this.bucket);
+          var blob = new BlobRecord(_this.file, checksum, _this.url, _this.region, _this.bucket, _this.folder);
           notify(_this.delegate, "directUploadWillCreateBlobWithXHR", blob.xhr);
           blob.create(function(error) {
             if (error) {
@@ -728,9 +730,10 @@
       this.input = input;
       this.region = input.getAttribute("data-region");
       this.bucket = input.getAttribute("data-bucket");
+      this.folder = input.getAttribute("data-folder");
       this.file = file;
       this.hiddenInput = hiddenInput;
-      this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this);
+      this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this.folder, this);
       this.dispatch("initialize");
     }
     createClass(DirectUploadController, [ {

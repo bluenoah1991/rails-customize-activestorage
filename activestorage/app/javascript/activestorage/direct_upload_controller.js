@@ -6,9 +6,10 @@ export class DirectUploadController {
     this.input = input
     this.region = input.getAttribute("data-region")
     this.bucket = input.getAttribute("data-bucket")
+    this.folder = input.getAttribute("data-folder")
     this.file = file
     this.hiddenInput = hiddenInput
-    this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this)
+    this.directUpload = new DirectUpload(this.file, this.url, this.region, this.bucket, this.folder, this)
     this.dispatch("initialize")
   }
 

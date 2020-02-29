@@ -1,7 +1,7 @@
 import { getMetaValue } from "./helpers"
 
 export class BlobRecord {
-  constructor(file, checksum, url, region, bucket) {
+  constructor(file, checksum, url, region, bucket, folder) {
     this.file = file
 
     let filename = file.webkitRelativePath
@@ -15,7 +15,8 @@ export class BlobRecord {
       byte_size: file.size,
       checksum: checksum,
       region: region,
-      bucket: bucket
+      bucket: bucket,
+      folder: folder
     }
 
     this.xhr = new XMLHttpRequest
